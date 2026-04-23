@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgenerator
+  namespace: apps
+  labels:
+    app: loadgenerator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadgenerator
+  template:
+    metadata:
+      labels:
+        app: loadgenerator
+      # annotations:
+      #   sidecar.istio.io/rewriteAppHTTPProbers: "true"
+      #   prometheus.io/scrape: "true"
+      #   prometheus.io/port: "8080"
+      #   prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: main
+          # ports:
+          #   - containerPort: 8080
+          image: magdyeldeeb/microservices-k8s:loadgenerator-1.5
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FRONTEND_ADDR
+              value: "frontend:8080"
+            - name: USERS
+              value: "10"
+          resources:
+            requests:
+              cpu: 300m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

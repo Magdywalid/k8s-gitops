@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'microservices-demo'
+        environment: 'local'
+
+    # Alertmanager configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+
+    # Load rules once and periodically evaluate them
+    rule_files:
+      - '/etc/prometheus/rules/*.yml'
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Kubernetes pods with prometheus.io/scrape annotation
+      # Kubernetes pods with prometheus.io/scrape annotation
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      - job_name: 'kubernetes-cadvisor'
+        scheme: http
+        static_configs:
+          - targets:
+              - k8s-worker1:10255
+              - k8s-worker2:10255 
+        metrics_path: /metrics/cadvisor
+
+  rules.yml: |
+    groups:
+      - name: microservices_alerts
+        interval: 30s
+        rules:
+          # Alert if any pod is down
+          - alert: PodDown
+            expr: up == 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod {{ $labels.kubernetes_pod_name }} is down"
+              description: "Pod {{ $labels.kubernetes_pod_name }} in namespace {{ $labels.kubernetes_namespace }} has been down for more than 2 minutes."
+
+          # Alert on high error rate (if error metrics are available)
+          - alert: HighErrorRate
+            expr: rate(grpc_requests_total{status="error"}[5m]) > 0.05
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High error rate on {{ $labels.app }}"
+              description: "Service {{ $labels.app }} has error rate above 5% for the last 5 minutes."
+
+          # Alert on high request latency (if latency metrics are available)
+          - alert: HighLatency
+            expr: histogram_quantile(0.95, rate(grpc_request_duration_seconds_bucket[5m])) > 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High latency on {{ $labels.app }}"
+              description: "Service {{ $labels.app }} has 95th percentile latency above 1s for the last 5 minutes."
+
+          # Alert if Prometheus is unable to scrape targets
+          - alert: PrometheusScrapeFailure
+            expr: up{job!="prometheus"} == 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Prometheus cannot scrape {{ $labels.job }}"
+              description: "Prometheus has failed to scrape {{ $labels.job }} for more than 5 minutes."

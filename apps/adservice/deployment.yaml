@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adservice
+  namespace: apps
+  labels:
+    app: adservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+      labels:
+        app: adservice
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: adservice
+          image: magdyeldeeb/microservices-k8s:adservice-1.0.0
+          ports:
+            - containerPort: 9555
+            - containerPort: 8080
+          imagePullPolicy: Always
+          env:
+            - name: DISABLE_STATS
+              value: "0"
+            - name: DISABLE_TRACING
+              value: "0"
+            - name: PORT
+              value: "9555"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 180Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            grpc:
+              port: 9555
+          readinessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            grpc:
+              port: 9555

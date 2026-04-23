@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shippingservice
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shippingservice
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+      labels:
+        app: shippingservice
+    spec:
+      terminationGracePeriodSeconds: 5
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: shippingservice
+          image: magdyeldeeb/microservices-k8s:shippingservice-1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "50051"
+            - name: DISABLE_PROFILER
+              value: "1"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 220Mi
+            limits:
+              cpu: 200m
+              memory: 450Mi
+          readinessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            grpc:
+              port: 50051
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            grpc:
+              port: 50051

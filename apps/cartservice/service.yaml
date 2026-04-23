@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice
+  namespace: apps
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: cartservice
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 7070
+      targetPort: 7070
+    - name: http
+      port: 8080
+      targetPort: 8080

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productcatalogservice
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+      labels:
+        app: productcatalogservice
+    spec:
+      terminationGracePeriodSeconds: 5
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: productcatalogservice
+          image: magdyeldeeb/microservices-k8s:productcatalogservice-1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3550
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "3550"
+            - name: DISABLE_PROFILER
+              value: "1"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          readinessProbe:
+            grpc:
+              port: 3550
+          livenessProbe:
+            grpc:
+              port: 3550

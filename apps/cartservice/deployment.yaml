@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice
+  namespace: apps
+  labels:
+    app: cartservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+      labels:
+        app: cartservice
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: cartservice
+          image: magdyeldeeb/microservices-k8s:cartservice-1.3
+          ports:
+            - containerPort: 8080
+            - containerPort: 7070
+          imagePullPolicy: Always
+          env:
+            - name: REDIS_ADDR
+              value: redis:6379
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+          resources:
+            requests:
+              cpu: 200m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 128Mi
+          # livenessProbe:
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5
+          #   timeoutSeconds: 10
+          #   grpc:
+          #     port: 7070
+          # readinessProbe:
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5
+          #   timeoutSeconds: 10
+          #   grpc:
+          #     port: 7070
