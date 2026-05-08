@@ -6,14 +6,16 @@ metadata:
 spec:
   project: default
 
-  source:
-    repoURL: https://github.com/Magdywalid/k8s-gitops.git
-    targetRevision: main
-    path: monitoring/loki
-
-    helm:
-      valueFiles:
-        - values.yaml
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      targetRevision: 2.9.11
+      chart: loki-stack
+      helm:
+        valueFiles:
+          - $values/monitoring/loki/values.yaml
+    - repoURL: https://github.com/Magdywalid/k8s-gitops.git
+      targetRevision: main
+      ref: values
 
   destination:
     server: https://kubernetes.default.svc
