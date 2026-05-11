@@ -11,7 +11,7 @@ spec:
       targetRevision: 26.0.0
       helm:
         valueFiles:
-          - $values/infrastructure/traefik/values_eks.yaml
+          - $values/infrastructure/traefik/values.yaml
     - repoURL: https://github.com/Magdywalid/k8s-gitops.git
       targetRevision: main
       ref: values
