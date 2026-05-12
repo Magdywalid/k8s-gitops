@@ -4,6 +4,7 @@ metadata:
   name: argocd
   namespace: argocd
   annotations:
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
   ingressClassName: traefik
