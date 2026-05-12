@@ -1,0 +1,12 @@
+loki:
+  persistence:
+    enabled: true
+    size: 10Gi
+    # Depending on EKS setup, gp2 or gp3 is usually default
+    storageClassName: gp2
+
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://logging-loki:3100/loki/api/v1/push

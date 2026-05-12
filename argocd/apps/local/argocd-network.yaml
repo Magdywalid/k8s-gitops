@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: certificates
+  name: network
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Magdywalid/k8s-gitops.git
     targetRevision: main
-    path: infrastructure/certificates
+    path: infrastructure/network/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
