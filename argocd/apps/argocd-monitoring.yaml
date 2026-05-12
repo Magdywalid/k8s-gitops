@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/Magdywalid/k8s-gitops.git
     targetRevision: main
-    path: monitoring
+    path: infrastructure/monitoring
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
