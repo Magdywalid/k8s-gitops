@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - shop.example.com
+        - shop.eks.com
       secretName: frontend-tls-cert
   rules:
-    - host: shop.example.com
+    - host: shop.eks.com
       http:
         paths:
           - path: /

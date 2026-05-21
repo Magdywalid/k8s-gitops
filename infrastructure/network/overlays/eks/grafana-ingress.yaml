@@ -10,10 +10,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - grafana.example.com
+        - grafana.eks.com
       secretName: grafana-tls-cert
   rules:
-    - host: grafana.example.com
+    - host: grafana.eks.com
       http:
         paths:
           - path: /
