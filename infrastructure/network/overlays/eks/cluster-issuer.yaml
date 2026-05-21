@@ -3,12 +3,4 @@ kind: ClusterIssuer
 metadata:
   name: selfsigned-issuer
 spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: magdy.mostafa1992@outlook.com  # <-- UPDATE THIS to your email
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-      - http01:
-          ingress:
-            class: traefik
+  selfSigned: {}
